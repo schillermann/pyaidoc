@@ -1,0 +1,6 @@
+{
+  "include": ["src", "tests"],
+  "venvPath": "/home/mario/code/maklerchat",
+  "venv": ".venv",
+  "extraPaths": ["src"]
+}
