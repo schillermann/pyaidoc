@@ -132,29 +132,6 @@ All classes adhere strictly to Pure OOP and package-by-feature composition:
 
 ---
 
-## Ecosystem & Web Integration
-
-`pyaidoc` is 100% autonomous and has zero external dependencies. It pairs naturally with other Pure OOP libraries in the ecosystem:
-
-* **[pyresponse](https://github.com/schillermann/pyresponse)**: A declarative, pure object-oriented ASGI web framework.
-
-Because `pyaidoc` produces clean HTML strings through living objects, integrating it into a `pyresponse` route requires zero glue code:
-
-```python
-from pyresponse import Get
-from pyresponse.response.text import Text
-from pyresponse.response.header import Header
-from pyaidoc import Tools, Page
-
-# Expose living AI tool documentation over HTTP
-route = Get(
-    "/ai-tools",
-    Header(Text(str(Page(tools))), "content-type", "text/html; charset=utf-8"),
-)
-```
-
----
-
 ## Testing
 
 Run tests and type verification:
