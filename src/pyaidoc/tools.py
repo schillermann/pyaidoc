@@ -1,5 +1,6 @@
 from typing import Any, Iterator
 from pyaidoc.tool import Tool
+from pyaidoc.schema_tool import SchemaTool
 
 
 class Tools:
@@ -8,8 +9,14 @@ class Tools:
     def __init__(self, *items: Any) -> None:
         self._items = items
 
-    def all(self) -> list[Tool]:
-        return [item if isinstance(item, Tool) else Tool(item) for item in self._items]
+    def all(self) -> list[Any]:
+        return [
+            item if hasattr(item, "parameters")
+            else SchemaTool(item) if isinstance(item, dict)
+            else Tool(item)
+            for item in self._items
+        ]
+
 
     def plus(self, tool_or_callable: Any) -> "Tools":
         return Tools(*self._items, tool_or_callable)

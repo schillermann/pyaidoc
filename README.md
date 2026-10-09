@@ -43,6 +43,7 @@ pip install git+https://github.com/schillermann/pyaidoc.git@main
 ### 1. Documenting Python Functions
 
 ```python
+from pathlib import Path
 from pyaidoc import Tools, Page
 
 def assign_document(doc_id: str, deal_id: str, notify: bool = False) -> dict:
@@ -56,12 +57,53 @@ def calculate_mortgage(amount: float, interest_rate: float = 3.5) -> dict:
 # Compose tools into an immutable collection
 tools = Tools(assign_document, calculate_mortgage)
 
-# Render standalone HTML documentation
-page = Page(tools)
-html_output = page.html()
+# Export standalone HTML file for local viewing
+Path("ai_tools_doc.html").write_text(str(Page(tools)), encoding="utf-8")
+```
 
-# Or get just the embedded section for an existing dashboard:
-section = page.section_html()
+### 2. Documenting OpenAI / JSON Function Calling Schemas
+
+`pyaidoc` also directly documents OpenAI / JSON tool calling specifications without conversion:
+
+```python
+from pathlib import Path
+from pyaidoc import Tools, Page, SchemaTool
+
+tools_specs = [
+    {
+        "type": "function",
+        "function": {
+            "name": "contact_upsert",
+            "description": "Erfasst oder aktualisiert Kunden im CRM.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string", "description": "Vollständiger Name"},
+                    "phone": {"type": "string", "description": "Telefonnummer"},
+                },
+                "required": ["name"],
+            },
+        },
+    }
+]
+
+tools = Tools(*tools_specs)
+Path("ai_tools_doc.html").write_text(str(Page(tools, "AI Tools Reference")), encoding="utf-8")
+```
+
+### 3. Viewing in the Browser & Regenerating on Changes
+
+Open the generated documentation directly in your browser:
+
+```bash
+xdg-open ai_tools_doc.html
+# or: google-chrome ai_tools_doc.html / firefox ai_tools_doc.html
+```
+
+Whenever you add new AI Function Calls or change parameters in your codebase, simply re-run your generation script:
+
+```bash
+python scripts/generate_ai_docs.py
 ```
 
 ---
@@ -73,15 +115,18 @@ All classes adhere strictly to Pure OOP and package-by-feature composition:
 | Object | Role |
 |---|---|
 | `Tool` | Represents an autonomous AI tool / function call from a Python callable. |
+| `SchemaTool` | Represents an AI tool / function call from an OpenAI/JSON tool schema. |
 | `Tools` | Immutable collection of tools supporting `.plus(tool)`. |
-| `Parameter` | Encapsulates parameter type, requirement status, and default value. |
-| `Parameters` | Encapsulates the collection of parameters derived from a signature. |
+| `Parameter` | Encapsulates callable parameter type, requirement status, and default value. |
+| `SchemaParameter` | Encapsulates schema property type, requirement status, and default value. |
+| `Parameters` / `SchemaParameters` | Encapsulates parameter collections derived from signatures or schemas. |
 | `TypeName` | Object extracting clean, readable type strings from annotations. |
 | `Docstring` / `EmptyDocstring` | Null Object pattern modeling presence or absence of docstrings without `None`. |
 | `Default` / `NoDefault` / `PresentDefault` | Null Object pattern modeling presence or absence of defaults without `None`. |
 | `Page` | Standalone HTML documentation page conforming to Pure OOP. |
 | `Card` / `Table` / `Row` / `Badge` | Granular, composable HTML UI elements. |
 | `Section` / `Document` / `Style` | Autonomous container, document skeleton, and CSS stylesheet objects. |
+
 
 
 
