@@ -27,12 +27,6 @@
 ## Installation
 
 ```bash
-pip install pyaidoc
-```
-
-Or install directly from GitHub:
-
-```bash
 pip install git+https://github.com/schillermann/pyaidoc.git@main
 ```
 
