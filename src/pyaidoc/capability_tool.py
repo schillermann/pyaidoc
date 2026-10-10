@@ -10,8 +10,9 @@ from pyaidoc.tool import Parameters
 class CapabilityTool:
     """Adapts a domain capability object with an execute() method into a Tool in Pure OOP."""
 
-    def __init__(self, origin: Any) -> None:
+    def __init__(self, origin: Any, ignored: tuple[str, ...] = ("self", "cls")) -> None:
         self._origin = origin
+        self._ignored = ignored
 
     def name(self) -> str:
         if hasattr(self._origin, "name") and callable(getattr(self._origin, "name")):
@@ -24,13 +25,19 @@ class CapabilityTool:
             desc = str(self._origin.description())
             if desc:
                 return desc
-        doc = Docstring(self._origin).clean_text()
-        if doc and doc != "Keine Beschreibung verfügbar.":
-            return doc
-        return Docstring(getattr(self._origin, "execute")).clean_text()
+        exec_doc = Docstring(getattr(self._origin, "execute"))
+        if exec_doc.present():
+            return exec_doc.clean_text()
+        return Docstring(self._origin).clean_text()
 
     def parameters(self) -> Parameters:
-        return CallableParameters(getattr(self._origin, "execute"))
+        ignored = (
+            tuple(self._origin.ignored_parameters())
+            if hasattr(self._origin, "ignored_parameters") and callable(getattr(self._origin, "ignored_parameters"))
+            else self._ignored
+        )
+        return CallableParameters(getattr(self._origin, "execute"), ignored=ignored)
 
     def __str__(self) -> str:
         return self.name()
+

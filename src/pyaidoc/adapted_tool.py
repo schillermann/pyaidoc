@@ -53,49 +53,53 @@ class SchemaToolCandidate:
 class CapabilityToolCandidate:
     """Resolves an origin that provides an execute() method."""
 
-    def __init__(self, origin: Any) -> None:
+    def __init__(self, origin: Any, ignored: tuple[str, ...] = ("self", "cls")) -> None:
         self._origin = origin
+        self._ignored = ignored
 
     def matched(self) -> bool:
         return hasattr(self._origin, "execute") and callable(getattr(self._origin, "execute"))
 
     def tool(self) -> Tool:
-        return CapabilityTool(self._origin)
+        return CapabilityTool(self._origin, ignored=self._ignored)
 
 
 class CallableToolCandidate:
     """Resolves an origin that is a callable function or method."""
 
-    def __init__(self, origin: Any) -> None:
+    def __init__(self, origin: Any, ignored: tuple[str, ...] = ("self", "cls")) -> None:
         self._origin = origin
+        self._ignored = ignored
 
     def matched(self) -> bool:
         return callable(self._origin)
 
     def tool(self) -> Tool:
-        return CallableTool(self._origin)
+        return CallableTool(self._origin, ignored=self._ignored)
 
 
 class AdaptedToolCandidates:
     """Collection of candidate resolvers for an adapted origin."""
 
-    def __init__(self, origin: Any) -> None:
+    def __init__(self, origin: Any, ignored: tuple[str, ...] = ("self", "cls")) -> None:
         self._origin = origin
+        self._ignored = ignored
 
     def all(self) -> tuple[AdaptedToolCandidate, ...]:
         return (
             ExistingToolCandidate(self._origin),
-            CapabilityToolCandidate(self._origin),
+            CapabilityToolCandidate(self._origin, ignored=self._ignored),
             SchemaToolCandidate(self._origin),
-            CallableToolCandidate(self._origin),
+            CallableToolCandidate(self._origin, ignored=self._ignored),
         )
 
 
 class AdaptedTool:
     """Smart envelope adapting callables, dict schemas, or existing tools into a pure Tool."""
 
-    def __init__(self, origin: Any) -> None:
+    def __init__(self, origin: Any, ignored: tuple[str, ...] = ("self", "cls")) -> None:
         self._origin = origin
+        self._ignored = ignored
 
     def name(self) -> str:
         return self.delegate().name()
@@ -108,10 +112,10 @@ class AdaptedTool:
 
     def delegate(self) -> Tool:
         """Resolves the adapted Tool via candidate polymorphism without isinstance."""
-        for candidate in AdaptedToolCandidates(self._origin).all():
+        for candidate in AdaptedToolCandidates(self._origin, ignored=self._ignored).all():
             if candidate.matched():
                 return candidate.tool()
-        return CallableTool(self._origin)
+        return CallableTool(self._origin, ignored=self._ignored)
 
     def __str__(self) -> str:
         return self.name()

@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2026-10-10
+
+### Added
+- Polymorphic `present()` and `empty()` query methods on `Docstring` and `EmptyDocstring`, eliminating string-sentinel checks.
+- `TargetExecutable` encapsulating target execution and LLM keyword argument filtering in `Tool`.
+- Autonomous `ignored_parameters()` protocol support on domain capability objects.
+
+### Changed
+- Decoupled application-specific parameters from `CallableParameters`: default `ignored` parameter tuple now strictly defaults to `("self", "cls")`.
+- Cleaned module imports in `pyaidoc.docstring` by moving `re` import to module top-level.
+
 ## [0.5.0] - 2026-10-10
 
 ### Added

@@ -9,8 +9,9 @@ from pyaidoc.tool import Tool, Parameters
 class CallableTool:
     """Adapts a Python callable into an autonomous AI tool in Pure OOP."""
 
-    def __init__(self, origin: Callable[..., Any]) -> None:
+    def __init__(self, origin: Callable[..., Any], ignored: tuple[str, ...] = ("self", "cls")) -> None:
         self._origin = origin
+        self._ignored = ignored
 
     def name(self) -> str:
         if hasattr(self._origin, "__name__"):
@@ -21,7 +22,7 @@ class CallableTool:
         return Docstring(self._origin).clean_text()
 
     def parameters(self) -> Parameters:
-        return CallableParameters(self._origin)
+        return CallableParameters(self._origin, ignored=self._ignored)
 
     def __str__(self) -> str:
         return self.name()
