@@ -16,8 +16,9 @@ from pyaidoc.html.badge import Badge
 from pyaidoc.html.section import Section
 from pyaidoc.html.style import Style
 from pyaidoc.html.document import Document
+from pyaidoc.terminal.terminal import Terminal
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 __all__ = [
     "__version__",
@@ -42,6 +43,7 @@ __all__ = [
     "Style",
     "Document",
     "Page",
+    "Terminal",
 ]
 
 

@@ -100,10 +100,42 @@ xdg-open ai_tools_doc.html
 # or: google-chrome ai_tools_doc.html / firefox ai_tools_doc.html
 ```
 
-Whenever you add new AI Function Calls or change parameters in your codebase, simply re-run your generation script:
+---
+
+## CLI Usage
+
+`pyaidoc` provides an autonomous command-line interface for inspecting and generating documentation without writing boilerplate scripts:
+
+### 1. Terminal Inspection
+
+List and inspect tools directly in your terminal:
 
 ```bash
-python scripts/generate_ai_docs.py
+pyaidoc tools
+```
+
+Or target a specific module/attribute:
+
+```bash
+pyaidoc tools my_app.agent:TOOLS
+```
+
+### 2. HTML Documentation Generation
+
+Generate standalone HTML documentation:
+
+```bash
+pyaidoc docs
+# Generates ai_tools_doc.html in current directory
+```
+
+### 3. Unified Developer Workflow with `pyresponse` (Optional)
+
+If your project uses [pyresponse](https://github.com/schillermann/pyresponse) for web services and routing, `pyaidoc` automatically registers as a plugin via entry points:
+
+```bash
+pr ai:tools   # inspect tools alongside 'pr routes'
+pr ai:docs    # generate HTML documentation
 ```
 
 ---

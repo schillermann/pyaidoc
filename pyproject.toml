@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyaidoc"
-version = "0.2.0"
+version = "0.3.0"
 description = "Zero-annotation, living HTML documentation for AI function calls and agent tools in Python."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -22,6 +22,14 @@ dependencies = []
 dev = [
     "pytest>=8.0.0",
 ]
+
+[project.scripts]
+pyaidoc = "pyaidoc.cli.__main__:main"
+
+[project.entry-points."pyresponse.commands"]
+ai_tools = "pyaidoc.cli.ai_tools:AiToolsCommand"
+ai_docs = "pyaidoc.cli.ai_docs:AiDocsCommand"
+
 
 [tool.setuptools.packages.find]
 where = ["src"]
