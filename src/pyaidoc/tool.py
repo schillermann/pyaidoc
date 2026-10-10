@@ -1,6 +1,6 @@
 """Pure OOP protocols for AI agent tools, parameters, and tool collections."""
 
-from typing import Iterator, Protocol
+from typing import Iterator, Protocol, runtime_checkable
 from pyaidoc.default import Default
 
 
@@ -60,6 +60,7 @@ class Tool(Protocol):
         ...
 
 
+@runtime_checkable
 class Tools(Protocol):
     """Contract for an immutable collection of AI agent tools."""
 

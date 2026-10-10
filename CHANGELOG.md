@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-10-10
+
+### Added
+- Universal OOP `Tool` decorator and wrapper supporting zero-annotation domain capability objects (`execute()` protocol) as well as standalone functions and methods.
+- Autonomous `invoke(arguments)` method on `Tool` parsing raw JSON strings or dictionary arguments directly into strongly-typed domain method calls.
+- OpenAI/Anthropic/Gemini function calling schema generator (`OpenAiSchema` and `OpenAiTools`) creating standard tool definitions directly from Python signatures and docstrings.
+- `JsonType` resolver translating Python type annotations to JSON Schema types (`string`, `integer`, `number`, `boolean`, `array`, `object`) with automatic `Optional[...]` / `Union` unwrapping and array element typing.
+- Automatic choice extraction from `typing.Literal` and `Enum` subclasses into schema `enum` arrays.
+- `DocstringParam` extracting individual parameter descriptions from Sphinx (`:param ...:`), Epydoc (`@param ...:`), and Google-style docstrings.
+- Automatic CamelCase to snake_case naming convention in `CapabilityTool` when domain objects do not define an explicit `name()` method.
+
 ## [0.4.1] - 2026-10-10
 
 ### Added

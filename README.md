@@ -4,23 +4,25 @@
 [![Zero Annotations](https://img.shields.io/badge/annotations-none-success.svg)](#)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-brightgreen.svg)](#)
 
-> Elegant, zero-annotation HTML documentation for AI agent tools and function calls in Python.
+> Elegant, zero-annotation HTML documentation, OpenAI schema generator, and execution adapter for AI agent tools in Python.
 
-`pyaidoc` inspects Python callables and objects representing AI tools dynamically via standard type hints and signatures — rendering a clean, responsive, human-readable HTML reference without requiring decorators, annotations, or external dependencies.
+`pyaidoc` inspects Python callables and domain capability objects dynamically via standard type hints and docstrings — rendering a clean, responsive HTML reference, generating standard OpenAI/Anthropic function calling schemas, and executing LLM JSON responses without requiring annotations, DTOs, or external frameworks.
 
 ---
 
 ## Features
 
-- **Zero Annotations**: Document your AI agent tools without cluttering domain logic with `@tool`, `@doc`, or Pydantic metadata.
+- **Zero Annotations**: Document and expose your AI agent tools without cluttering domain logic with `@tool`, `@doc`, or Pydantic metadata.
 - **Pure OOP Architecture**: Designed strictly following Yegor Bugayenko's *[Elegant Objects](https://www.elegantobjects.org)* principles:
   - 100% Code-free constructors (assignments only).
-  - No getters, setters, or JavaBeans prefixes (`is...`, `has...`).
+  - True GoF Decorator Pattern: wrap living domain objects (`Tool(capability)`) instead of syntax macros.
+  - Zero DTOs or untyped data bags: strongly-typed parameter signatures.
   - Null Object pattern (never returns `None`).
-  - Immutable objects and composable decorators.
-  - Zero static methods or utility classes.
+  - Single Source of Truth: type hints and docstrings generate schemas, terminal docs, and HTML docs automatically.
+- **OpenAI / LLM Function Schema Generator**: Generates 100% compliant function calling definitions directly from Python methods, including descriptions from Sphinx (`:param ...:`) or Google-style docstrings, choices from `typing.Literal` and `Enum`, and automatic `Optional[...]` unwrapping.
+- **Autonomous LLM Invocation**: `await tool.invoke(json_string)` directly binds raw JSON strings from OpenAI to strongly-typed domain method calls.
 - **Zero Dependencies**: Pure standard Python 3.10+ — no heavy frameworks or runtime baggage.
-- **Clean HTML Output**: Modern, responsive styling with dark/light mode support, badge indicators for required/optional parameters, and parameter tables.
+- **Clean HTML & Terminal Output**: Modern, responsive styling with dark/light mode support, badge indicators for required/optional parameters, and rich ANSI terminal cards.
 
 ---
 
@@ -34,11 +36,60 @@ pip install git+https://github.com/schillermann/pyaidoc.git@main
 
 ## Quickstart
 
-### 1. Documenting Python Functions
+### 1. Pure OOP Domain Capabilities (Zero Annotations)
+
+In Pure OOP, your business capability is an autonomous living object. It knows nothing about AI, OpenAI, or JSON:
+
+```python
+from typing import Literal, Optional
+from pyaidoc import Tool
+
+class ContactUpsert:
+    """Creates or updates contacts in the CRM."""
+
+    async def execute(
+        self,
+        name: str,
+        phone: str = "",
+        budget: Optional[float] = None,
+        role: Literal["owner", "buyer", "tenant"] = "owner",
+    ) -> dict:
+        """
+        Creates or updates a client contact.
+
+        :param name: Full name of the customer or organization.
+        :param phone: Phone or mobile number.
+        :param budget: Maximum purchase budget in Euro.
+        :param role: Transaction role of the contact.
+        """
+        return {"status": "saved", "name": name, "budget": budget, "role": role}
+
+# 1. Wrap in the pure OOP Tool decorator:
+tool = Tool(ContactUpsert())
+
+# 2. Generate standard OpenAI function calling schema:
+print(tool.schema())
+# {
+#   "type": "function",
+#   "function": {
+#     "name": "contact_upsert",
+#     "description": "Creates or updates contacts in the CRM.",
+#     "parameters": { ... }
+#   }
+# }
+
+# 3. Execute directly with raw JSON string from LLM:
+import asyncio
+result = asyncio.run(tool.invoke('{"name": "Klaus Meyer", "budget": 650000.0}'))
+print(result)
+# {'status': 'saved', 'name': 'Klaus Meyer', 'budget': 650000.0, 'role': 'owner'}
+```
+
+### 2. Documenting Python Functions
 
 ```python
 from pathlib import Path
-from pyaidoc import CallableTool, Tools, Page
+from pyaidoc import Tools, Page, Tool
 
 def assign_document(doc_id: str, deal_id: str, notify: bool = False) -> dict:
     """Assigns a document to a deal and notifies stakeholders."""
@@ -49,15 +100,15 @@ def calculate_mortgage(amount: float, interest_rate: float = 3.5) -> dict:
     return {"rate": 1200.0}
 
 # Compose tools into an immutable collection
-tools = Tools(CallableTool(assign_document), CallableTool(calculate_mortgage))
+tools = Tools(Tool(assign_document), Tool(calculate_mortgage))
 
 # Export standalone HTML file for local viewing
 Path("ai_tools_doc.html").write_text(str(Page(tools)), encoding="utf-8")
 ```
 
-### 2. Documenting OpenAI / JSON Function Calling Schemas
+### 3. Documenting OpenAI / JSON Function Calling Schemas
 
-`pyaidoc` also directly documents OpenAI / JSON tool calling specifications without conversion:
+`pyaidoc` also directly documents raw OpenAI / JSON tool calling specifications without conversion:
 
 ```python
 from pathlib import Path
@@ -83,15 +134,6 @@ tools_specs = [
 
 tools = Tools(*(SchemaTool(spec) for spec in tools_specs))
 Path("ai_tools_doc.html").write_text(str(Page(tools, "AI Tools Reference")), encoding="utf-8")
-```
-
-### 3. Viewing in the Browser & Regenerating on Changes
-
-Open the generated documentation directly in your browser:
-
-```bash
-xdg-open ai_tools_doc.html
-# or: google-chrome ai_tools_doc.html / firefox ai_tools_doc.html
 ```
 
 ---
@@ -140,15 +182,17 @@ All classes adhere strictly to Pure OOP and package-by-feature composition:
 
 | Object | Role |
 |---|---|
-| `Tool` | Pure protocol specifying name, description, and parameters for any tool. |
+| `Tool` | Universal OOP decorator and envelope adapting callables, capability objects, and schemas. |
+| `CapabilityTool` | Adapts a domain capability object with an `execute()` method into a living Tool. |
 | `CallableTool` | Adapts an external Python callable into an autonomous AI tool. |
 | `SchemaTool` | Adapts an OpenAI/JSON tool schema dictionary into an autonomous AI tool. |
-| `SchemaFunction` | Encapsulates function definition and parameter dictionaries in JSON schemas. |
+| `OpenAiSchema` | Generates OpenAI-compatible function calling schemas from any living Tool. |
+| `OpenAiTools` | Generates a collection of OpenAI tool schemas from a list of tools. |
+| `JsonType` | Translates Python type annotations to JSON Schema types with `Optional`/`Union` unwrapping. |
+| `DocstringParam` | Extracts parameter descriptions from Sphinx, Epydoc, and Google-style docstrings. |
 | `AdaptedTool` | Universal envelope adapting callables, schemas, or tools via candidate polymorphism. |
 | `Tools` | Pure immutable collection of tools with code-free constructors. |
-| `AdaptedTools` | Envelope decorator collection adapting arbitrary callables or schemas via composition. |
 | `Parameter` | Encapsulates callable parameter type, requirement status, and default value. |
-| `SchemaParameter` | Encapsulates schema property type, requirement status, and default value. |
 | `Parameters` / `SchemaParameters` | Encapsulates parameter collections derived from signatures or schemas. |
 | `TypeName` | Object extracting clean type strings via candidate resolvers (zero `isinstance`). |
 | `Docstring` / `EmptyDocstring` | Null Object pattern modeling presence or absence of docstrings without `None`. |
@@ -161,9 +205,6 @@ All classes adhere strictly to Pure OOP and package-by-feature composition:
 | `Output` / `Stdout` / `MemoryOutput` | Text stream abstractions eliminating hardcoded global `print()` calls. |
 | `FileDestination` / `LocalFile` / `MemoryFile` | Encapsulates storage destinations eliminating procedural file writes. |
 | `Arguments` | Encapsulates CLI argument strings in a cohesive object (no raw string lists). |
-
-
-
 
 ---
 

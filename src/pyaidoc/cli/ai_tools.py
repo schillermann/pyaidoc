@@ -1,5 +1,6 @@
 """AiToolsCommand printing AI function calls to an output stream in Pure OOP."""
 
+from typing import Any
 from pyaidoc.terminal import Terminal
 from pyaidoc.cli.target import ToolsTarget
 from pyaidoc.cli.output import Output, Stdout
@@ -27,8 +28,9 @@ class AiToolsCommand:
     def matches(self, verb: str) -> bool:
         return verb in ("ai:tools", "tools")
 
-    def execute(self, args: Arguments = Arguments()) -> ExitCode:
-        target = args.first()
+    def execute(self, args: Any = Arguments()) -> ExitCode:
+        parsed = args if isinstance(args, Arguments) else Arguments(*args)
+        target = parsed.first()
         tools = ToolsTarget(target).tools()
         if tools.empty():
             self._output.print("No AI agent tools discovered. Specify target via 'pyaidoc tools <module:attr>'.")

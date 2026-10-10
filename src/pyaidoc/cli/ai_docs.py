@@ -1,6 +1,7 @@
 """AiDocsCommand generating static HTML documentation in Pure OOP."""
 
 from pathlib import Path
+from typing import Any
 from pyaidoc.html.page import Page
 from pyaidoc.cli.target import ToolsTarget
 from pyaidoc.cli.output import Output, Stdout
@@ -34,8 +35,9 @@ class AiDocsCommand:
     def matches(self, verb: str) -> bool:
         return verb in ("ai:docs", "docs")
 
-    def execute(self, args: Arguments = Arguments()) -> ExitCode:
-        target = args.first()
+    def execute(self, args: Any = Arguments()) -> ExitCode:
+        parsed = args if isinstance(args, Arguments) else Arguments(*args)
+        target = parsed.first()
         tools = ToolsTarget(target).tools()
         if tools.empty():
             self._output.print("No AI agent tools discovered. Specify target via 'pyaidoc docs <module:attr>'.")

@@ -15,7 +15,7 @@ class CallableParameters:
     def items(self) -> tuple[CallableParameter, ...]:
         signature = inspect.signature(self._origin)
         return tuple(
-            CallableParameter(param)
+            CallableParameter(param, self._origin)
             for param in signature.parameters.values()
             if param.name not in ("self", "cls")
         )

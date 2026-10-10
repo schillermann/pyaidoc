@@ -74,3 +74,26 @@ def test_adapted_tool_from_function_and_schema() -> None:
     adapted_schema: Tool = AdaptedTool(schema)
     assert adapted_schema.name() == "calc"
     assert adapted_schema.description() == "Calculate something"
+
+
+def test_adapted_tool_from_capability_instance() -> None:
+    class DummyCapability:
+        """Erfasst einen neuen Kunden im CRM."""
+
+        def name(self) -> str:
+            return "customer_intake"
+
+        def execute(self, full_name: str, email: str = "") -> dict:
+            return {"name": full_name, "email": email}
+
+    cap = DummyCapability()
+    tool: Tool = AdaptedTool(cap)
+    assert tool.name() == "customer_intake"
+    assert "Erfasst einen neuen Kunden" in tool.description()
+    params = list(tool.parameters())
+    assert len(params) == 2
+    assert params[0].name() == "full_name"
+    assert params[0].required() is True
+    assert params[1].name() == "email"
+    assert params[1].required() is False
+

@@ -18,7 +18,7 @@ class CallableTool:
         return self._origin.__class__.__name__
 
     def description(self) -> str:
-        return Docstring(self._origin).text()
+        return Docstring(self._origin).clean_text()
 
     def parameters(self) -> Parameters:
         return CallableParameters(self._origin)

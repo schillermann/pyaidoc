@@ -5,7 +5,9 @@ from pyaidoc.docstring import Docstring, EmptyDocstring
 from pyaidoc.type_name import TypeName
 from pyaidoc.parameter import Parameter, CallableParameter
 from pyaidoc.parameters import Parameters, CallableParameters
-from pyaidoc.tool import Tool
+from pyaidoc.tool import Tool as ToolProtocol
+from pyaidoc.tool_decorator import Tool, tool
+from pyaidoc.openai_schema import OpenAiSchema, OpenAiTools
 from pyaidoc.callable_tool import CallableTool
 from pyaidoc.schema_tool import SchemaTool, SchemaParameter, SchemaParameters
 from pyaidoc.adapted_tool import AdaptedTool
@@ -36,6 +38,10 @@ __all__ = [
     "Parameters",
     "CallableParameters",
     "Tool",
+    "tool",
+    "ToolProtocol",
+    "OpenAiSchema",
+    "OpenAiTools",
     "CallableTool",
     "SchemaTool",
     "SchemaParameter",

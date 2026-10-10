@@ -37,6 +37,14 @@ class Docstring:
             return self._empty.text()
         return doc.strip()
 
+    def clean_text(self) -> str:
+        raw = self.text()
+        import re
+        match = re.search(r"\n\s*(?:[:@]param|Args:|Parameters:)", raw)
+        if match:
+            return raw[:match.start()].strip()
+        return raw
+
     def summary(self) -> str:
         full_text = self.text()
         lines = full_text.splitlines()

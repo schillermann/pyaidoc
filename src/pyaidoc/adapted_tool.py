@@ -4,6 +4,7 @@ from typing import Any, Protocol, runtime_checkable
 from pyaidoc.tool import Tool, Parameters
 from pyaidoc.callable_tool import CallableTool
 from pyaidoc.schema_tool import SchemaTool
+from pyaidoc.capability_tool import CapabilityTool
 
 
 @runtime_checkable
@@ -49,6 +50,19 @@ class SchemaToolCandidate:
         return SchemaTool(self._origin)
 
 
+class CapabilityToolCandidate:
+    """Resolves an origin that provides an execute() method."""
+
+    def __init__(self, origin: Any) -> None:
+        self._origin = origin
+
+    def matched(self) -> bool:
+        return hasattr(self._origin, "execute") and callable(getattr(self._origin, "execute"))
+
+    def tool(self) -> Tool:
+        return CapabilityTool(self._origin)
+
+
 class CallableToolCandidate:
     """Resolves an origin that is a callable function or method."""
 
@@ -71,6 +85,7 @@ class AdaptedToolCandidates:
     def all(self) -> tuple[AdaptedToolCandidate, ...]:
         return (
             ExistingToolCandidate(self._origin),
+            CapabilityToolCandidate(self._origin),
             SchemaToolCandidate(self._origin),
             CallableToolCandidate(self._origin),
         )

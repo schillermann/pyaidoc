@@ -20,6 +20,14 @@ class Default(Protocol):
         """Returns True if a default value is present."""
         ...
 
+    def empty(self) -> bool:
+        """Returns True if no default value is present."""
+        ...
+
+    def value(self) -> Any:
+        """Returns the underlying default value."""
+        ...
+
 
 class NoDefault:
     """Null object representing the absence of a default value."""
@@ -35,6 +43,12 @@ class NoDefault:
 
     def present(self) -> bool:
         return False
+
+    def empty(self) -> bool:
+        return True
+
+    def value(self) -> Any:
+        return None
 
     def __str__(self) -> str:
         return self.text()
@@ -96,6 +110,12 @@ class PresentDefault:
 
     def present(self) -> bool:
         return True
+
+    def empty(self) -> bool:
+        return False
+
+    def value(self) -> Any:
+        return self._value
 
     def __str__(self) -> str:
         return self.text()
