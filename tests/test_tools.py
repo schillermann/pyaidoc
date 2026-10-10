@@ -42,4 +42,4 @@ def test_tools_empty() -> None:
 
 def test_package_version() -> None:
     import pyaidoc
-    assert pyaidoc.__version__ == "0.4.0"
+    assert pyaidoc.__version__ == "0.4.1"

@@ -21,7 +21,7 @@ from pyaidoc.html.document import Document
 from pyaidoc.terminal.terminal import Terminal
 from pyaidoc.ternary import Ternary
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 
 __all__ = [
     "__version__",
