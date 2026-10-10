@@ -128,8 +128,8 @@ pyaidoc docs
 If your project uses [pyresponse](https://github.com/schillermann/pyresponse) for web services and routing, `pyaidoc` automatically registers as a plugin via entry points:
 
 ```bash
-pr ai:tools   # inspect tools alongside 'pr routes'
-pr ai:docs    # generate HTML documentation
+pyr ai:tools   # inspect tools alongside 'pyr routes'
+pyr ai:docs    # generate HTML documentation
 ```
 
 ---
