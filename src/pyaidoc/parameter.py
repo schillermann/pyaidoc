@@ -1,9 +1,13 @@
+"""Callable parameter encapsulation in Pure OOP."""
+
 import inspect
 from pyaidoc.default import Default, NoDefault, PresentDefault
 from pyaidoc.type_name import TypeName
+from pyaidoc.ternary import Ternary
+from pyaidoc.tool import Parameter as ParameterProtocol
 
 
-class Parameter:
+class CallableParameter:
     """Encapsulates a callable parameter conforming to Pure OOP."""
 
     def __init__(self, param: inspect.Parameter) -> None:
@@ -19,9 +23,14 @@ class Parameter:
         return self._param.default is inspect._empty
 
     def default(self) -> Default:
-        if self.required():
-            return NoDefault()
-        return PresentDefault(self._param.default)
+        return Ternary(
+            self.required(),
+            NoDefault(),
+            PresentDefault(self._param.default),
+        ).value()
 
     def __str__(self) -> str:
         return f"{self.name()}: {self.type()}"
+
+
+Parameter = CallableParameter

@@ -50,7 +50,7 @@ def test_schema_tool_properties() -> None:
 
 
 def test_schema_tool_in_tools_collection() -> None:
-    tools = Tools(SAMPLE_SCHEMA)
+    tools = Tools(SchemaTool(SAMPLE_SCHEMA))
     page = Page(tools, "AI Tools")
     html = page.html()
 

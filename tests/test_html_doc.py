@@ -5,8 +5,8 @@ from pyaidoc.html.section import Section
 from pyaidoc.html.style import Style
 from pyaidoc.html.document import Document
 from pyaidoc.parameter import Parameter
-from pyaidoc.tool import Tool
-from pyaidoc.tools import Tools
+from pyaidoc.callable_tool import CallableTool
+from pyaidoc.tools import Tools, AdaptedTools
 import inspect
 
 
@@ -21,7 +21,7 @@ def ping() -> str:
 
 
 def test_page_renders_tools() -> None:
-    tools = Tools(calculate_mortgage, ping)
+    tools = AdaptedTools(calculate_mortgage, ping)
     page = Page(tools)
     html_output = page.html()
 
@@ -40,7 +40,7 @@ def test_page_renders_tools() -> None:
 
 
 def test_card_individual_render() -> None:
-    card = Card(Tool(ping))
+    card = Card(CallableTool(ping))
     html_output = card.html()
     assert "ping" in html_output
     assert "Einfacher Statuscheck." in html_output
@@ -60,24 +60,25 @@ def test_badge_rendering() -> None:
 
 def test_page_empty_state() -> None:
     page = Page(Tools())
-    section = page.section_html()
-    assert "Keine AI-Tools registriert." in section
+    assert "Keine AI-Tools registriert." in page.html()
+    section = Section(Tools(), "Empty Section")
+    assert "Keine AI-Tools registriert." in str(section)
 
 
 def test_page_str_conversion() -> None:
-    page = Page(Tools(ping))
+    page = Page(Tools(CallableTool(ping)))
     assert str(page) == page.html()
 
 
 def test_card_str_conversion() -> None:
-    card = Card(Tool(ping))
+    card = Card(CallableTool(ping))
     assert str(card) == card.html()
 
 
 def test_section_and_style_autonomous_render() -> None:
     style = Style()
     assert ":root" in str(style)
-    section = Section(Tools(ping), "My Tools")
+    section = Section(Tools(CallableTool(ping)), "My Tools")
     assert "My Tools" in str(section)
 
 
@@ -89,7 +90,36 @@ def test_document_autonomous_render() -> None:
 
 
 def test_page_custom_title() -> None:
-    page = Page(Tools(ping), "Custom Tools Title")
+    page = Page(Tools(CallableTool(ping)), "Custom Tools Title")
     assert page.title() == "Custom Tools Title"
     assert "<title>Custom Tools Title</title>" in page.html()
 
+
+def test_document_and_page_with_custom_style() -> None:
+    custom_style = Style("body { background: purple; }")
+    doc = Document("Custom Doc", "<p>Content</p>", style=custom_style)
+    assert "body { background: purple; }" in doc.html()
+
+    page = Page(Tools(CallableTool(ping)), style=custom_style)
+    assert "body { background: purple; }" in page.html()
+
+
+def test_polymorphic_badges_and_default_css() -> None:
+    from pyaidoc.html.badge import RequiredBadge, OptionalBadge
+    from pyaidoc.html.style import DefaultCss
+    from pyaidoc.html.table import EmptyTableContent
+    from pyaidoc.html.section import EmptySectionCards
+
+    assert "req" in RequiredBadge("Pflichtfeld").html()
+    assert "Pflichtfeld" in str(RequiredBadge("Pflichtfeld"))
+    assert "opt" in OptionalBadge("Freiwillig").html()
+    assert "Freiwillig" in str(OptionalBadge("Freiwillig"))
+
+    default_css = DefaultCss(font_base="16px")
+    assert "--font-size-base: 16px;" in default_css.text()
+
+    empty_table = EmptyTableContent("Nichts vorhanden")
+    assert "Nichts vorhanden" in empty_table.html()
+
+    empty_section = EmptySectionCards("Keine Werkzeuge")
+    assert "Keine Werkzeuge" in empty_section.html()

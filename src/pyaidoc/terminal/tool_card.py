@@ -1,6 +1,6 @@
 """Terminal representation of an AI tool in Pure OOP."""
 
-from typing import Any
+from pyaidoc.tool import Tool
 from pyaidoc.terminal.style import Ansi, StyledText
 from pyaidoc.terminal.param import TerminalParam
 
@@ -8,7 +8,7 @@ from pyaidoc.terminal.param import TerminalParam
 class TerminalToolCard:
     """Formats an AI tool card with ANSI styling for terminal display."""
 
-    def __init__(self, tool: Any) -> None:
+    def __init__(self, tool: Tool) -> None:
         self._tool = tool
 
     def text(self) -> str:

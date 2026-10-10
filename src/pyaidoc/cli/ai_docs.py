@@ -1,12 +1,29 @@
-"""AiDocsCommand generating static HTML documentation."""
+"""AiDocsCommand generating static HTML documentation in Pure OOP."""
 
 from pathlib import Path
 from pyaidoc.html.page import Page
 from pyaidoc.cli.target import ToolsTarget
+from pyaidoc.cli.output import Output, Stdout
+from pyaidoc.cli.destination import FileDestination, LocalFile
+from pyaidoc.cli.exit_code import ExitCode, Success, Failure
+from pyaidoc.cli.arguments import Arguments
 
 
 class AiDocsCommand:
-    """Generate static HTML documentation for AI function calls."""
+    """Generate static HTML documentation for AI function calls in Pure OOP."""
+
+    def __init__(
+        self,
+        output: Output = Stdout(),
+        destination: FileDestination = LocalFile(Path("ai_tools_doc.html")),
+    ) -> None:
+        self._output = output
+        self._destination = destination
+
+    @classmethod
+    def standard(cls) -> "AiDocsCommand":
+        """Secondary constructor with standard output and local file destination."""
+        return cls(Stdout(), LocalFile(Path("ai_tools_doc.html")))
 
     def name(self) -> str:
         return "ai:docs"
@@ -17,15 +34,14 @@ class AiDocsCommand:
     def matches(self, verb: str) -> bool:
         return verb in ("ai:docs", "docs")
 
-    def execute(self, args: list[str]) -> int:
-        target = args[0] if args else ""
+    def execute(self, args: Arguments = Arguments()) -> ExitCode:
+        target = args.first()
         tools = ToolsTarget(target).tools()
         if tools.empty():
-            print("No AI agent tools discovered. Specify target via 'pr ai:docs <module:attr>'.")
-            return 1
-        dest = Path.cwd() / "ai_tools_doc.html"
+            self._output.print("No AI agent tools discovered. Specify target via 'pyaidoc docs <module:attr>'.")
+            return Failure("No AI agent tools discovered.")
         page = Page(tools, "AI Agent Function Calls Reference")
-        dest.write_text(str(page), encoding="utf-8")
-        print(f"✅ HTML documentation for {len(tools)} tools generated successfully!")
-        print(f"📄 File: {dest}")
-        return 0
+        self._destination.write(str(page))
+        self._output.print(f"✅ HTML documentation for {len(tools)} tools generated successfully!")
+        self._output.print(f"📄 File: {self._destination.path()}")
+        return Success()

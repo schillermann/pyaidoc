@@ -43,9 +43,20 @@ def test_type_name_formatting() -> None:
     assert TypeName(inspect._empty).text() == "Any"
     assert TypeName(str).text() == "str"
     assert str(TypeName(int)) == "int"
+    assert TypeName(list[int]).text() == "list[int]"
+    import typing
+    assert TypeName(typing.List[str]).text() == "List[str]"
 
 
 def test_default_html_rendering() -> None:
     assert NoDefault().html() == '<span class="pyaidoc-empty">—</span>'
     assert PresentDefault(42).html() == "<code>42</code>"
     assert PresentDefault("hello").html() == '<code>&quot;hello&quot;</code>'
+
+
+def test_ternary_resolution() -> None:
+    from pyaidoc.ternary import Ternary
+
+    assert Ternary(True, "consequent", "alternative").value() == "consequent"
+    assert Ternary(False, "consequent", "alternative").value() == "alternative"
+    assert str(Ternary(True, 123, 456)) == "123"

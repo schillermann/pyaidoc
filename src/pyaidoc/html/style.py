@@ -1,11 +1,20 @@
-class Style:
-    """Encapsulates the CSS stylesheet rules for pyaidoc HTML pages."""
+"""CSS Stylesheet for pyaidoc HTML pages in Pure OOP."""
+
+from typing import Any
+
+
+class DefaultCss:
+    """Encapsulates the standard pyaidoc CSS stylesheet rules."""
+
+    def __init__(self, font_base: str = "15px", font_min: str = "14px") -> None:
+        self._font_base = font_base
+        self._font_min = font_min
 
     def text(self) -> str:
         return (
             ":root {\n"
-            "  --font-size-base: 15px;\n"
-            "  --font-size-min: 14px;\n"
+            f"  --font-size-base: {self._font_base};\n"
+            f"  --font-size-min: {self._font_min};\n"
             "  --bg-color: #f8fafc;\n"
             "  --card-bg: #ffffff;\n"
             "  --text-main: #0f172a;\n"
@@ -50,6 +59,19 @@ class Style:
             ".pyaidoc-badge.opt { background: var(--badge-opt-bg); color: var(--badge-opt-text); }\n"
             ".pyaidoc-empty, .pyaidoc-no-params { color: var(--text-muted); font-size: var(--font-size-min); font-style: italic; }\n"
         )
+
+    def __str__(self) -> str:
+        return self.text()
+
+
+class Style:
+    """Encapsulates the CSS stylesheet rules for pyaidoc HTML pages."""
+
+    def __init__(self, css: Any = DefaultCss()) -> None:
+        self._css = css
+
+    def text(self) -> str:
+        return str(self._css)
 
     def __str__(self) -> str:
         return self.text()

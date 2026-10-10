@@ -2,6 +2,52 @@
 
 from typing import Any, Iterator
 from pyaidoc.default import Default, NoDefault, PresentDefault
+from pyaidoc.tool import Tool, Parameter, Parameters
+from pyaidoc.ternary import Ternary
+
+
+class EnumParameterType:
+    """Encapsulates display of enum parameter types."""
+
+    def __init__(self, prop: dict[str, Any]) -> None:
+        self._prop = prop
+
+    def matched(self) -> bool:
+        return "enum" in self._prop
+
+    def text(self) -> str:
+        raw = self._prop.get("type", "any")
+        return f"enum ({raw})"
+
+
+class StandardParameterType:
+    """Encapsulates display of standard primitive parameter types."""
+
+    def __init__(self, prop: dict[str, Any]) -> None:
+        self._prop = prop
+
+    def matched(self) -> bool:
+        return True
+
+    def text(self) -> str:
+        return str(self._prop.get("type", "any"))
+
+
+class SchemaParameterType:
+    """Candidate-driven resolver for schema parameter types."""
+
+    def __init__(self, prop: dict[str, Any]) -> None:
+        self._prop = prop
+
+    def text(self) -> str:
+        candidates = (EnumParameterType(self._prop), StandardParameterType(self._prop))
+        for candidate in candidates:
+            if candidate.matched():
+                return candidate.text()
+        return "any"
+
+    def __str__(self) -> str:
+        return self.text()
 
 
 class SchemaParameter:
@@ -21,18 +67,17 @@ class SchemaParameter:
         return self._name
 
     def type(self) -> str:
-        raw_type = self._prop.get("type", "any")
-        if "enum" in self._prop:
-            return f"enum ({raw_type})"
-        return str(raw_type)
+        return str(SchemaParameterType(self._prop))
 
     def required(self) -> bool:
         return self._name in self._required_names
 
     def default(self) -> Default:
-        if "default" in self._prop:
-            return PresentDefault(self._prop["default"])
-        return NoDefault()
+        return Ternary(
+            "default" in self._prop,
+            PresentDefault(self._prop.get("default")),
+            NoDefault(),
+        ).value()
 
     def __str__(self) -> str:
         return f"{self.name()}: {self.type()}"
@@ -44,14 +89,13 @@ class SchemaParameters:
     def __init__(self, params: dict[str, Any]) -> None:
         self._params = params
 
-    def items(self) -> list[SchemaParameter]:
+    def items(self) -> tuple[SchemaParameter, ...]:
         props: dict[str, Any] = self._params.get("properties", {})
         required_names: tuple[str, ...] = tuple(self._params.get("required", []))
-        return [
+        return tuple(
             SchemaParameter(name, prop, required_names)
             for name, prop in props.items()
-        ]
-
+        )
 
     def empty(self) -> bool:
         return len(self.items()) == 0
@@ -63,25 +107,43 @@ class SchemaParameters:
         return len(self.items())
 
 
-class SchemaTool:
-    """Represents an AI function call or agent tool from a JSON/OpenAI schema."""
+class SchemaFunction:
+    """Encapsulates the function definition extracted from a tool spec."""
 
     def __init__(self, spec: dict[str, Any]) -> None:
         self._spec = spec
 
+    def body(self) -> dict[str, Any]:
+        fn: Any = self._spec.get("function")
+        if hasattr(fn, "get"):
+            return fn
+        return self._spec
+
     def name(self) -> str:
-        body: dict[str, Any] = self._spec.get("function", self._spec)
-        return str(body.get("name", ""))
+        return str(self.body().get("name", ""))
 
     def description(self) -> str:
-        body: dict[str, Any] = self._spec.get("function", self._spec)
-        return str(body.get("description", ""))
+        return str(self.body().get("description", ""))
 
-    def parameters(self) -> SchemaParameters:
-        body: dict[str, Any] = self._spec.get("function", self._spec)
-        params: dict[str, Any] = body.get("parameters", {})
-        return SchemaParameters(params)
+    def parameters_dict(self) -> dict[str, Any]:
+        raw = self.body().get("parameters", {})
+        return raw if hasattr(raw, "get") else {}
+
+
+class SchemaTool:
+    """Represents an AI function call or agent tool from a JSON/OpenAI schema."""
+
+    def __init__(self, spec: dict[str, Any]) -> None:
+        self._function = SchemaFunction(spec)
+
+    def name(self) -> str:
+        return self._function.name()
+
+    def description(self) -> str:
+        return self._function.description()
+
+    def parameters(self) -> Parameters:
+        return SchemaParameters(self._function.parameters_dict())
 
     def __str__(self) -> str:
         return self.name()
-

@@ -1,11 +1,22 @@
-"""AiToolsCommand printing AI function calls to the terminal."""
+"""AiToolsCommand printing AI function calls to an output stream in Pure OOP."""
 
 from pyaidoc.terminal import Terminal
 from pyaidoc.cli.target import ToolsTarget
+from pyaidoc.cli.output import Output, Stdout
+from pyaidoc.cli.exit_code import ExitCode, Success, Failure
+from pyaidoc.cli.arguments import Arguments
 
 
 class AiToolsCommand:
-    """Print formatted AI agent function calls to the terminal."""
+    """Print formatted AI agent function calls to an output stream in Pure OOP."""
+
+    def __init__(self, output: Output = Stdout()) -> None:
+        self._output = output
+
+    @classmethod
+    def standard(cls) -> "AiToolsCommand":
+        """Secondary constructor with standard terminal output."""
+        return cls(Stdout())
 
     def name(self) -> str:
         return "ai:tools"
@@ -16,11 +27,11 @@ class AiToolsCommand:
     def matches(self, verb: str) -> bool:
         return verb in ("ai:tools", "tools")
 
-    def execute(self, args: list[str]) -> int:
-        target = args[0] if args else ""
+    def execute(self, args: Arguments = Arguments()) -> ExitCode:
+        target = args.first()
         tools = ToolsTarget(target).tools()
         if tools.empty():
-            print("No AI agent tools discovered. Specify target via 'pr ai:tools <module:attr>'.")
-            return 1
-        print(Terminal(tools, "AI Function Calls Reference"))
-        return 0
+            self._output.print("No AI agent tools discovered. Specify target via 'pyaidoc tools <module:attr>'.")
+            return Failure("No AI agent tools discovered.")
+        self._output.print(str(Terminal(tools, "AI Function Calls Reference")))
+        return Success()

@@ -1,25 +1,46 @@
+"""Immutable collections of AI agent tools in Pure OOP."""
+
 from typing import Any, Iterator
-from pyaidoc.tool import Tool
-from pyaidoc.schema_tool import SchemaTool
+from pyaidoc.tool import Tool, Tools as ToolsProtocol
+from pyaidoc.adapted_tool import AdaptedTool
 
 
-class Tools:
-    """Immutable collection of AI agent tools."""
+class ToolsCollection:
+    """Concrete immutable collection of typed Tool objects."""
+
+    def __init__(self, *items: Tool) -> None:
+        self._items = items
+
+    def all(self) -> tuple[Tool, ...]:
+        return self._items
+
+    def plus(self, tool: Tool) -> "ToolsCollection":
+        return ToolsCollection(*self._items, tool)
+
+    def empty(self) -> bool:
+        return len(self._items) == 0
+
+    def __iter__(self) -> Iterator[Tool]:
+        return iter(self._items)
+
+    def __len__(self) -> int:
+        return len(self._items)
+
+
+Tools = ToolsCollection
+
+
+class AdaptedTools:
+    """Envelope adapting arbitrary callables, schemas, or tools with 100% code-free constructor."""
 
     def __init__(self, *items: Any) -> None:
         self._items = items
 
-    def all(self) -> list[Any]:
-        return [
-            item if hasattr(item, "parameters")
-            else SchemaTool(item) if isinstance(item, dict)
-            else Tool(item)
-            for item in self._items
-        ]
+    def all(self) -> tuple[Tool, ...]:
+        return tuple(AdaptedTool(item) for item in self._items)
 
-
-    def plus(self, tool_or_callable: Any) -> "Tools":
-        return Tools(*self._items, tool_or_callable)
+    def plus(self, tool: Any) -> "AdaptedTools":
+        return AdaptedTools(*self._items, tool)
 
     def empty(self) -> bool:
         return len(self._items) == 0

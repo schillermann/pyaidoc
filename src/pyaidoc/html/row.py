@@ -1,6 +1,6 @@
 import html
 from pyaidoc.html.badge import Badge
-from pyaidoc.parameter import Parameter
+from pyaidoc.tool import Parameter
 
 
 class Row:

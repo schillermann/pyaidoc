@@ -1,3 +1,5 @@
+"""HTML document skeleton renderer in Pure OOP."""
+
 import html
 from pyaidoc.html.style import Style
 
@@ -5,13 +7,14 @@ from pyaidoc.html.style import Style
 class Document:
     """Renders a complete, standalone HTML document skeleton."""
 
-    def __init__(self, title: str, content: str) -> None:
+    def __init__(self, title: str, content: str, style: Style = Style()) -> None:
         self._title = title
         self._content = content
+        self._style = style
 
     def html(self) -> str:
         escaped_title = html.escape(self._title)
-        stylesheet = str(Style())
+        stylesheet = str(self._style)
         return (
             "<!DOCTYPE html>\n"
             '<html lang="de">\n'

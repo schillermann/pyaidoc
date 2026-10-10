@@ -1,13 +1,13 @@
 """Terminal parameter line formatter in Pure OOP."""
 
-from typing import Any
+from pyaidoc.tool import Parameter
 from pyaidoc.terminal.style import Ansi, StyledText
 
 
 class TerminalParam:
     """Formats a single parameter for terminal display."""
 
-    def __init__(self, param: Any) -> None:
+    def __init__(self, param: Parameter) -> None:
         self._param = param
 
     def text(self) -> str:

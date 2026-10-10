@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-10-10
+
+### Changed
+- Radical Pure OOP refactoring adhering strictly to Yegor Bugayenko's *Elegant Objects* philosophy:
+  - 100% Code-free constructors across all classes (assignments only).
+  - Total eradication of `isinstance` checks using candidate polymorphism (`AdaptedToolCandidates`, `TypeNameCandidates`, `DefaultValueCandidates`).
+  - Replaced stateless fake objects with stateful Null Objects (`EmptyDocstring`, `NoDefault`, `EmptyTableContent`, `EmptySectionCards`).
+  - Replaced module-level variables with autonomous domain objects (introduced `DefaultCss`).
+  - Introduced `Ternary` conditional object in `pyaidoc.ternary` eliminating imperative `if/return` in domain objects.
+  - Extracted `SchemaFunction` and candidate-based `SchemaParameterType` to cleanly encapsulate OpenAI/JSON tool schemas.
+  - Refactored badges into polymorphic objects (`RequiredBadge`, `OptionalBadge`, `Badge`).
+  - Implemented Dependency Inversion on UI elements (`Card`, `Document`, `Page`, `Table`).
+  - CLI architecture refactored to pure objects: `ExitCode`, `Output` (`Stdout`, `MemoryOutput`), `FileDestination` (`LocalFile`, `MemoryFile`), and immutable `Arguments`.
+  - Documentation in `README.md` completely translated to English.
+
 ## [0.3.0] - 2026-10-10
 
 ### Added

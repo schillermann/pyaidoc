@@ -1,6 +1,4 @@
-"""Terminal document representation of AI tools in Pure OOP."""
-
-from pyaidoc.tools import Tools
+from pyaidoc.tool import Tools
 from pyaidoc.terminal.style import Ansi, StyledText
 from pyaidoc.terminal.tool_card import TerminalToolCard
 

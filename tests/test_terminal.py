@@ -43,7 +43,7 @@ def test_terminal_tool_card_output() -> None:
 
 
 def test_terminal_full_document() -> None:
-    tools = Tools(SAMPLE_SCHEMA)
+    tools = Tools(SchemaTool(SAMPLE_SCHEMA))
     doc = Terminal(tools, "Test Suite Tools")
     output = str(doc)
 

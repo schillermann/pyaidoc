@@ -44,18 +44,18 @@ pip install git+https://github.com/schillermann/pyaidoc.git@main
 
 ```python
 from pathlib import Path
-from pyaidoc import Tools, Page
+from pyaidoc import CallableTool, Tools, Page
 
 def assign_document(doc_id: str, deal_id: str, notify: bool = False) -> dict:
-    """Weist ein Dokument einem Deal zu und benachrichtigt Beteiligte."""
+    """Assigns a document to a deal and notifies stakeholders."""
     return {"status": "ok"}
 
 def calculate_mortgage(amount: float, interest_rate: float = 3.5) -> dict:
-    """Berechnet die monatliche Kreditrate für eine Immobilie."""
+    """Calculates the monthly mortgage payment for a property."""
     return {"rate": 1200.0}
 
 # Compose tools into an immutable collection
-tools = Tools(assign_document, calculate_mortgage)
+tools = Tools(CallableTool(assign_document), CallableTool(calculate_mortgage))
 
 # Export standalone HTML file for local viewing
 Path("ai_tools_doc.html").write_text(str(Page(tools)), encoding="utf-8")
@@ -74,12 +74,12 @@ tools_specs = [
         "type": "function",
         "function": {
             "name": "contact_upsert",
-            "description": "Erfasst oder aktualisiert Kunden im CRM.",
+            "description": "Creates or updates contacts in the CRM.",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "name": {"type": "string", "description": "Vollständiger Name"},
-                    "phone": {"type": "string", "description": "Telefonnummer"},
+                    "name": {"type": "string", "description": "Full name"},
+                    "phone": {"type": "string", "description": "Phone number"},
                 },
                 "required": ["name"],
             },
@@ -87,7 +87,7 @@ tools_specs = [
     }
 ]
 
-tools = Tools(*tools_specs)
+tools = Tools(*(SchemaTool(spec) for spec in tools_specs))
 Path("ai_tools_doc.html").write_text(str(Page(tools, "AI Tools Reference")), encoding="utf-8")
 ```
 
@@ -146,18 +146,27 @@ All classes adhere strictly to Pure OOP and package-by-feature composition:
 
 | Object | Role |
 |---|---|
-| `Tool` | Represents an autonomous AI tool / function call from a Python callable. |
-| `SchemaTool` | Represents an AI tool / function call from an OpenAI/JSON tool schema. |
-| `Tools` | Immutable collection of tools supporting `.plus(tool)`. |
+| `Tool` | Pure protocol specifying name, description, and parameters for any tool. |
+| `CallableTool` | Adapts an external Python callable into an autonomous AI tool. |
+| `SchemaTool` | Adapts an OpenAI/JSON tool schema dictionary into an autonomous AI tool. |
+| `SchemaFunction` | Encapsulates function definition and parameter dictionaries in JSON schemas. |
+| `AdaptedTool` | Universal envelope adapting callables, schemas, or tools via candidate polymorphism. |
+| `Tools` | Pure immutable collection of tools with code-free constructors. |
+| `AdaptedTools` | Envelope decorator collection adapting arbitrary callables or schemas via composition. |
 | `Parameter` | Encapsulates callable parameter type, requirement status, and default value. |
 | `SchemaParameter` | Encapsulates schema property type, requirement status, and default value. |
 | `Parameters` / `SchemaParameters` | Encapsulates parameter collections derived from signatures or schemas. |
-| `TypeName` | Object extracting clean, readable type strings from annotations. |
+| `TypeName` | Object extracting clean type strings via candidate resolvers (zero `isinstance`). |
 | `Docstring` / `EmptyDocstring` | Null Object pattern modeling presence or absence of docstrings without `None`. |
 | `Default` / `NoDefault` / `PresentDefault` | Null Object pattern modeling presence or absence of defaults without `None`. |
 | `Page` | Standalone HTML documentation page conforming to Pure OOP. |
-| `Card` / `Table` / `Row` / `Badge` | Granular, composable HTML UI elements. |
-| `Section` / `Document` / `Style` | Autonomous container, document skeleton, and CSS stylesheet objects. |
+| `Card` / `Table` / `Row` | Granular, composable HTML UI elements with dependency inversion. |
+| `Badge` / `RequiredBadge` / `OptionalBadge` | Polymorphic UI badges for parameter requirement status. |
+| `Section` / `Document` / `Style` / `DefaultCss` | Autonomous container, document skeleton, and stylesheet objects (zero global variables). |
+| `ExitCode` / `Success` / `Failure` | Autonomous exit code value objects conforming to Pure OOP (no raw ints). |
+| `Output` / `Stdout` / `MemoryOutput` | Text stream abstractions eliminating hardcoded global `print()` calls. |
+| `FileDestination` / `LocalFile` / `MemoryFile` | Encapsulates storage destinations eliminating procedural file writes. |
+| `Arguments` | Encapsulates CLI argument strings in a cohesive object (no raw string lists). |
 
 
 
